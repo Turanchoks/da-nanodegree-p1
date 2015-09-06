@@ -1,0 +1,92 @@
+---
+title: "Test a Perceptual Phenomenon"
+author: "Pavel Remizov"
+date: "06 September 2015"
+output: html_document
+---
+
+In a Stroop task, participants are presented with a list of words, with each word displayed in a color of ink. The participant’s task is to say out loud the color of the ink in which the word is printed. The task has two conditions: a congruent words condition, and an incongruent words condition. In the congruent words condition, the words being displayed are color words whose names match the colors in which they are printed. In the incongruent words condition, the words displayed are color words whose names do not match the colors in which they are printed. In each case, we measure the time it takes to name the ink colors in equally-sized lists. Each participant will go through and record a time from each condition.
+
+### Description of the data
+
+In a Stroop task, congruence of the word condition is an independent variable and time spent on reading the words in each condition is a dependent variable. To prove the Stroop effect and try to estimate it, we need to formulate hypothesis. To begin with, let's assume the null hypothesis is that there is no significant difference between the results or the result in the incongruent words condition is better (it takes the same amount of time or less to read the words). For the alternative hypothesis we assume that in the incongruent words condition the results are worse (it takes more time to read the words). To test this, we will use one-tailed t-test in the positive direction.
+
+First, let's see and describe the data.  
+```{r echo=FALSE, fig.align='center'}
+data <- read.csv('./stroopdata.csv')
+
+hist(data$Congruent, col=rgb(1,0,0,0.5), ylim=c(0,6), main='Stroop effect', xlab='Seconds', breaks=10)
+hist(data$Incongruent, col=rgb(0,0,1,0.5), add=T, breaks=10)
+legend("topleft", c("Congruent word condition", "Incongruent word condition"), fill=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5)))
+box()
+
+n <- length(data$Congruent)
+df <- n - 1
+
+c_mean <- mean(data$Congruent)
+c_sd <- sd(data$Congruent)
+
+ic_mean <- mean(data$Incongruent)
+ic_sd <- sd(data$Incongruent)
+
+diff_mu <- ic_mean - c_mean
+diff_sd <- sd(data$Incongruent - data$Congruent)
+diff_se <- diff_sd / sqrt(n)
+
+t_stat <- diff_mu / diff_se
+p_value <- pt(t_stat, df, lower.tail = FALSE)
+```
+
+The plot show that in general people cope with the task, when words are in incongruent condition. Mean time for congruent words condition task is **`r round(c_mean, 2)`** (μ~congruent~) with standard deviation **`r round(c_sd, 2)`**. Mean time for incongruent words condition task is **`r round(ic_mean, 2)`** (μ~incongruent~) with standard deviation **`r round(ic_sd, 2)`**.
+
+### Hypothesis testing
+
+So, we want to perform a hypothesis test.
+
+**H~0~: μ~congruent~ ≥ μ~incongruent~**  
+**H~A~: μ~congruent~ < μ~incongruent~**
+
+The mean difference between two samples is  **`r round(diff_mu, 2)`**, sample standard deviation is **`r round(diff_sd, 2)`**, standard error of the mean equals **`r round(diff_se, 2)`**  
+To find t-statistics, we take the difference and divide it by standard error. T-statistics equals **`r round(t_stat, 2)`**.
+
+**t(`r df`) = `r round(t_stat, 2)`, p = `r round(p_value, 2)`, one-tailed **  
+
+P-value is very small, so we reject the null hypothesis for any meaningful α-level. That proves that the difference in results between two tasks exists, it was also evident from the histogram.
+
+```{r echo=FALSE}
+diff_test <- 5
+t_stat_new <- (diff_mu - diff_test) / diff_se
+p_value_new <- pt(t_stat_new, df, lower.tail = FALSE)
+alpha <- .05
+t_crit <- qt(alpha/2, df, lower.tail = FALSE)
+me <- t_crit * diff_se
+```
+
+Let's check if the difference is at least `r diff_test` seconds.  
+**H~0~: μ~incongruent~ - μ~congruent~ ≤ `r diff_test`**  
+**H~A~: μ~incongruent~ - μ~congruent~ > `r diff_test`** 
+
+Now, to find t-statistics, we take the difference, substract `r diff_test` and divide it by standard error. T-statistics equals **`r round(t_stat_new, 2)`**. α-level is `r alpha`.
+
+**t(`r df`) = `r round(t_stat_new, 2)`, p = `r round(p_value_new, 3)`, one-tailed **  
+**Critical t-statistics is `r round(t_crit, 2)`**  
+**95% CI = (`r round(diff_mu - me, 2)` , `r round(diff_mu + me, 2)`)**
+
+For α-level `r alpha` we reject the null hypothesis. We can say that the difference between the tasks is at least `r diff_test` seconds. 
+
+### Effect size
+
+To measure effect size for the last hypothesis testing, we will use two standartized mean difference (Cohen's d) and coefficient of determination (r^2^).
+
+```{r echo=FALSE}
+cohens_d <- (diff_mu - diff_test) / diff_sd
+r2 <- (t_stat_new^2 / (t_stat_new^2 + df))
+```
+
+Cohen's d equals **`r round(cohens_d, 2)`**. Therefore, mean difference is approximatly `r round(cohens_d, 1)` standard deviations away from `r diff_test`.
+
+r^2^ equals **`r round(r2, 2)`**. It tells us that about `r round(r2 * 100)`% of differences in the results are explained by the inconguence of words in the second task.
+
+## Conclusions
+The study demonstrated the existence of Stroop effect. According to it, people tend to read words longer if they are printed in incongruent colors. In addition, it was proved that at some significance level, the difference in time it takes to fulfill tasks in congruent and incongruent words condition is at least 5 seconds.
+
