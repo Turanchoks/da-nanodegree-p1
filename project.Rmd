@@ -41,10 +41,12 @@ The plot show that in general people cope with the task, when words are in incon
 
 ### Hypothesis testing
 
-So, we want to perform a hypothesis test.
+So, we want to perform a hypothesis test. We want to find out if there is any significant difference between the two population and we are going to derive that using t-statistics on the two sample.
 
 **H~0~: μ~congruent~ ≥ μ~incongruent~**  
 **H~A~: μ~congruent~ < μ~incongruent~**
+
+where μ~congruent~ and μ~incongruent~ are population means for congruent and incongruent words condition respectevely. This is a one-sided test.
 
 The mean difference between two samples is  **`r round(diff_mu, 2)`**, sample standard deviation is **`r round(diff_sd, 2)`**, standard error of the mean equals **`r round(diff_se, 2)`**  
 To find t-statistics, we take the difference and divide it by standard error. T-statistics equals **`r round(t_stat, 2)`**.
